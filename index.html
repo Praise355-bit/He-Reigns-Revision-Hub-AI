@@ -1096,6 +1096,97 @@ body {
   font-size: 12px; color: var(--blue);
   margin-bottom: 20px; line-height: 1.5;
 }
+
+/* =========================================================
+   NOTES FEATURE
+   ========================================================= */
+.notes-add-card {
+  padding: 22px;
+  background: var(--grad-card);
+  border: 2px solid rgba(37,99,235,0.2);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+}
+.notes-add-card h3 {
+  font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 14px;
+  background: var(--grad-primary);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.form-textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(37,99,235,0.2);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  transition: all 0.2s;
+}
+.form-textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.15), 0 0 20px rgba(37,99,235,0.2);
+  background: rgba(255,255,255,0.08);
+}
+.notes-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+@media (max-width: 600px) { .notes-row { grid-template-columns: 1fr; } }
+
+.notes-toolbar { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.notes-toolbar .btn-primary, .notes-toolbar .btn-secondary { width: auto; flex: 1; min-width: 160px; }
+
+.notes-list { display: flex; flex-direction: column; gap: 14px; }
+.note-card {
+  padding: 18px 20px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: all 0.2s;
+}
+.note-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-card); }
+.note-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.note-card-head .q-pill { margin: 0; }
+.note-card-date { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.note-summary-text { font-size: 13.5px; line-height: 1.7; color: var(--text-secondary); white-space: pre-wrap; }
+.note-card-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.note-card-actions button { padding: 8px 14px; font-size: 12.5px; }
+
+.note-qa-box { margin-top: 14px; display: none; }
+.note-qa-box.show { display: block; animation: fadeSlideIn 0.3s ease; }
+.note-qa-input-row { display: flex; gap: 8px; }
+.note-qa-input-row input { flex: 1; }
+.note-qa-answer {
+  margin-top: 10px;
+  padding: 12px 16px;
+  background: rgba(14,165,233,0.1);
+  border: 1.5px solid rgba(14,165,233,0.3);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px; line-height: 1.65;
+  display: none;
+}
+.note-qa-answer.show { display: block; }
+
+.notes-general-card {
+  margin-top: 24px;
+  padding: 20px 22px;
+  background: rgba(37,99,235,0.1);
+  border: 1.5px solid rgba(37,99,235,0.3);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+.notes-general-card h3 { color: var(--blue); font-family: var(--font-display); font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+.notes-general-card p { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 14px; }
+.form-select{
+  background-color: transparent;
+  color: white;
+}
+.form-select option{
+  background-color: transparent;
+  color: black;
+}
 </style>
 </head>
 <body>
@@ -1174,6 +1265,9 @@ body {
       </div>
       <div class="nav-item" data-page="subjects">
         <span class="nav-icon">📚</span> Start Quiz
+      </div>
+      <div class="nav-item" data-page="notes">
+        <span class="nav-icon">📝</span> Notes
       </div>
       <div class="nav-section-label">Progress</div>
       <div class="nav-item" data-page="analytics">
@@ -1323,6 +1417,51 @@ body {
             </div>
           </div>
           <button class="btn-primary" id="btn-start-quiz">Generate Questions with AI →</button>
+        </div>
+      </section>
+
+      <!-- ========== NOTES ========== -->
+      <section class="page" id="page-notes">
+        <div class="page-header">
+          <h2>My Notes</h2>
+          <p>Add your class notes — AI will summarize them, answer your questions, or quiz you on them</p>
+        </div>
+
+        <div class="notes-add-card">
+          <h3>➕ Add New Note</h3>
+          <div class="notes-row">
+            <div class="option-group">
+              <label style="margin-bottom:8px;display:block;">Subject</label>
+              <select class="form-select" id="note-subject-select"></select>
+            </div>
+            <div class="option-group">
+              <label style="margin-bottom:8px;display:block;">Class</label>
+              <select class="form-select" id="note-class-select">
+                <option>JSS1</option><option>JSS2</option><option>JSS3</option>
+                <option>SS1</option><option>SS2</option><option>SS3</option>
+              </select>
+            </div>
+          </div>
+          <textarea class="form-textarea" id="note-text-input" placeholder="Paste or type your class notes here…"></textarea>
+          <div class="notes-toolbar">
+            <button class="btn-primary" id="btn-save-note">💾 Save & Summarize with AI</button>
+          </div>
+        </div>
+
+        <div class="recent-section">
+          <h3>Saved Notes</h3>
+          <div class="notes-list" id="notes-list">
+            <div class="empty-state">
+              <span class="empty-icon">📝</span>
+              No notes yet — add your first note above!
+            </div>
+          </div>
+        </div>
+
+        <div class="notes-general-card" id="notes-general-card" style="display:none;">
+          <h3>🧠 General Revision Quiz</h3>
+          <p>Take a quiz generated from ALL your saved notes combined</p>
+          <button class="btn-primary" style="max-width:280px;margin:0 auto;" id="btn-general-notes-quiz">🚀 Quiz Me On All My Notes</button>
         </div>
       </section>
 
@@ -1516,11 +1655,11 @@ body {
       <button class="mobile-nav-item" data-page="subjects">
         <span class="mn-icon">📚</span>Quiz
       </button>
+      <button class="mobile-nav-item" data-page="notes">
+        <span class="mn-icon">📝</span>Notes
+      </button>
       <button class="mobile-nav-item" data-page="analytics">
         <span class="mn-icon">📊</span>Stats
-      </button>
-      <button class="mobile-nav-item" data-page="leaderboard">
-        <span class="mn-icon">🏆</span>Ranks
       </button>
       <button class="mobile-nav-item" data-page="settings">
         <span class="mn-icon">⚙️</span>More
@@ -1608,6 +1747,8 @@ const ACHIEVEMENTS_CONFIG = [
   { id: 'hard_quiz',     name: 'Challenge Seeker', icon: '💀', desc: 'Complete a Hard difficulty quiz' },
   { id: 'multi_subject', name: 'Polymath',         icon: '🧠', desc: 'Study 5 different subjects' },
   { id: 'speed_demon',   name: 'Speed Demon',      icon: '⚡', desc: 'Finish a quiz in under 3 minutes' },
+  { id: 'note_taker',    name: 'Note Taker',       icon: '📝', desc: 'Save your first note' },
+  { id: 'notes_5',       name: 'Archivist',        icon: '🗂️', desc: 'Save 5 notes' },
 ];
 
 const Store = {
@@ -1628,6 +1769,8 @@ const Store = {
     theme: 'dark', fontSize: '15px', sound: true, voice: false
   }),
   setSettings: (s) => Store.set('rh_settings', s),
+  getNotes: ()    => Store.get('rh_notes', []),
+  setNotes: (n)   => Store.set('rh_notes', n),
 };
 
 const Voice = {
@@ -1670,22 +1813,43 @@ const Groq = {
   baseURL: 'https://api.groq.com/openai/v1/chat/completions',
   model: 'llama-3.3-70b-versatile',
   getKey() { return sessionStorage.getItem('rh_groq_key') || ''; },
-  async generateQuestions(subject, difficulty, count, studentClass) {
+  async chat(prompt, { temperature = 0.6, max_tokens = 2048 } = {}) {
     const key = this.getKey();
     if (!key) throw new Error('No API key');
-    const prompt = `You are an expert Nigerian secondary school teacher. Generate exactly ${count} high-quality multiple-choice questions for:\n- Subject: ${subject}\n- Class: ${studentClass}\n- Difficulty: ${difficulty}\n- Curriculum: Nigerian educational curriculum (WAEC/NECO standard)\n\nReturn ONLY a valid JSON array (no markdown, no preamble) with this exact structure:\n[\n  {\n    "question": "The question text here?",\n    "options": {\n      "A": "First option",\n      "B": "Second option",\n      "C": "Third option",\n      "D": "Fourth option"\n    },\n    "answer": "A",\n    "explanation": "Detailed explanation of why A is correct and why others are wrong."\n  }\n]\n\nRules:\n- Questions must be appropriate for ${studentClass} students\n- ${difficulty === 'Easy' ? 'Keep questions foundational and straightforward' : difficulty === 'Medium' ? 'Include moderate application and understanding questions' : 'Include complex analysis, evaluation and higher-order thinking questions'}\n- All 4 options must be plausible\n- Explanations must be clear and educational\n- Generate exactly ${count} questions`.trim();
     const resp = await fetch(this.baseURL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-      body: JSON.stringify({ model: this.model, messages: [{ role: 'user', content: prompt }], temperature: 0.7, max_tokens: 4096 })
+      body: JSON.stringify({ model: this.model, messages: [{ role: 'user', content: prompt }], temperature, max_tokens })
     });
     if (!resp.ok) { const err = await resp.json().catch(() => ({})); throw new Error(err.error?.message || `API error ${resp.status}`); }
     const data = await resp.json();
-    const raw = data.choices?.[0]?.message?.content || '[]';
+    return data.choices?.[0]?.message?.content || '';
+  },
+  async generateQuestions(subject, difficulty, count, studentClass) {
+    const prompt = `You are an expert Nigerian secondary school teacher. Generate exactly ${count} high-quality multiple-choice questions for:\n- Subject: ${subject}\n- Class: ${studentClass}\n- Difficulty: ${difficulty}\n- Curriculum: Nigerian educational curriculum (WAEC/NECO standard)\n\nReturn ONLY a valid JSON array (no markdown, no preamble) with this exact structure:\n[\n  {\n    "question": "The question text here?",\n    "options": {\n      "A": "First option",\n      "B": "Second option",\n      "C": "Third option",\n      "D": "Fourth option"\n    },\n    "answer": "A",\n    "explanation": "Detailed explanation of why A is correct and why others are wrong."\n  }\n]\n\nRules:\n- Questions must be appropriate for ${studentClass} students\n- ${difficulty === 'Easy' ? 'Keep questions foundational and straightforward' : difficulty === 'Medium' ? 'Include moderate application and understanding questions' : 'Include complex analysis, evaluation and higher-order thinking questions'}\n- All 4 options must be plausible\n- Explanations must be clear and educational\n- Generate exactly ${count} questions`.trim();
+    const raw = await this.chat(prompt, { temperature: 0.7, max_tokens: 4096 });
     const clean = raw.replace(/```json|```/gi, '').trim();
     const questions = JSON.parse(clean);
     if (!Array.isArray(questions) || questions.length === 0) { throw new Error('Invalid response from AI'); }
     return questions;
+  },
+  async generateQuestionsFromNotes(notesText, difficulty, count, subjectLabel) {
+    const prompt = `You are an expert teacher. Below are a student's class notes${subjectLabel ? ` on ${subjectLabel}` : ''}. Based ONLY on the content of these notes, generate exactly ${count} multiple-choice questions at ${difficulty} difficulty that test understanding of the material.\n\n--- NOTES START ---\n${notesText.slice(0, 9000)}\n--- NOTES END ---\n\nReturn ONLY a valid JSON array (no markdown, no preamble) with this exact structure:\n[\n  {\n    "question": "The question text here?",\n    "options": { "A": "...", "B": "...", "C": "...", "D": "..." },\n    "answer": "A",\n    "explanation": "Explanation referencing the notes."\n  }\n]\n\nRules:\n- Base every question strictly on the notes content provided\n- All 4 options must be plausible\n- Generate exactly ${count} questions`.trim();
+    const raw = await this.chat(prompt, { temperature: 0.6, max_tokens: 4096 });
+    const clean = raw.replace(/```json|```/gi, '').trim();
+    const questions = JSON.parse(clean);
+    if (!Array.isArray(questions) || questions.length === 0) { throw new Error('Invalid response from AI'); }
+    return questions;
+  },
+  async summarizeNotes(notesText, subjectLabel) {
+    const prompt = `You are a helpful study assistant. Summarize the following class notes${subjectLabel ? ` on ${subjectLabel}` : ''} into a concise, well-organized summary for revision purposes. Use short bullet points (start each with "• "), group related ideas, and bold key terms is not needed — just keep it plain text. Keep the summary clear and exam-focused.\n\n--- NOTES ---\n${notesText.slice(0, 9000)}\n\nReturn ONLY the summary text, no preamble, no markdown headers.`.trim();
+    const raw = await this.chat(prompt, { temperature: 0.4, max_tokens: 1024 });
+    return raw.trim();
+  },
+  async askAboutNotes(notesText, question, subjectLabel) {
+    const prompt = `You are a study assistant helping a student revise${subjectLabel ? ` ${subjectLabel}` : ''}. Answer the student's question using ONLY the information in the notes below. If the answer isn't in the notes, say so honestly and give your best general explanation, clearly noting it's not from their notes.\n\n--- NOTES ---\n${notesText.slice(0, 9000)}\n\n--- STUDENT QUESTION ---\n${question}\n\nGive a clear, concise, exam-helpful answer.`.trim();
+    const raw = await this.chat(prompt, { temperature: 0.5, max_tokens: 800 });
+    return raw.trim();
   }
 };
 
@@ -1768,7 +1932,7 @@ const UI = {
     if (target) target.classList.add('active');
     document.querySelectorAll('.nav-item').forEach(n => { n.classList.toggle('active', n.dataset.page === pageId); });
     document.querySelectorAll('.mobile-nav-item').forEach(n => { n.classList.toggle('active', n.dataset.page === pageId); });
-    const titles = { dashboard:'Dashboard', subjects:'Start Quiz', quiz:'Quiz', results:'Results', analytics:'Analytics', leaderboard:'Leaderboard', achievements:'Achievements', settings:'Settings' };
+    const titles = { dashboard:'Dashboard', subjects:'Start Quiz', notes:'Notes', quiz:'Quiz', results:'Results', analytics:'Analytics', leaderboard:'Leaderboard', achievements:'Achievements', settings:'Settings' };
     document.getElementById('topbar-title').textContent = titles[pageId] || 'Revision Hub AI';
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('show');
@@ -1777,6 +1941,7 @@ const UI = {
     if (pageId === 'analytics')    App.renderAnalytics();
     if (pageId === 'achievements') App.renderAchievements();
     if (pageId === 'subjects')     App.renderSubjects();
+    if (pageId === 'notes')        App.renderNotes();
   },
   formatTime(s) { const m = Math.floor(s / 60); const sec = s % 60; return m > 0 ? `${m}m ${sec}s` : `${sec}s`; },
   initials(name) { return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase(); }
@@ -1785,7 +1950,8 @@ const UI = {
 const Quiz = {
   questions: [], current: 0, answers: {}, startTime: 0,
   timerInterval: null, timeLeft: 60, subject: '', difficulty: '', totalQuestions: 10, locked: false,
-  reset() { this.questions = []; this.current = 0; this.answers = {}; this.locked = false; clearInterval(this.timerInterval); },
+  fromNotes: false,
+  reset() { this.questions = []; this.current = 0; this.answers = {}; this.locked = false; this.fromNotes = false; clearInterval(this.timerInterval); },
   startTimer() {
     this.timeLeft = 60; this.updateTimerDisplay();
     clearInterval(this.timerInterval);
@@ -1963,7 +2129,7 @@ const App = {
     document.getElementById('font-size-select').addEventListener('change', (e) => { document.documentElement.style.setProperty('--fs-base', e.target.value); const settings = Store.getSettings(); settings.fontSize = e.target.value; Store.setSettings(settings); });
     document.getElementById('btn-reset').addEventListener('click', () => {
       if (confirm('⚠️ This will delete ALL your data. Are you sure?')) {
-        ['rh_profile','rh_stats','rh_leaderboard','rh_settings'].forEach(k => Store.remove(k));
+        ['rh_profile','rh_stats','rh_leaderboard','rh_settings','rh_notes'].forEach(k => Store.remove(k));
         sessionStorage.removeItem('rh_groq_key'); location.reload();
       }
     });
@@ -1975,8 +2141,18 @@ const App = {
       document.getElementById('key-overlay').style.display = 'none';
       UI.toast('API key saved!', 'success');
       if (this._pendingQuiz) { this._pendingQuiz = false; this.startQuizSession(); }
+      if (this._pendingNoteAction) { const fn = this._pendingNoteAction; this._pendingNoteAction = null; fn(); }
     });
     document.getElementById('key-toggle-show').addEventListener('click', () => { const inp = document.getElementById('key-input'); inp.type = inp.type === 'password' ? 'text' : 'password'; });
+
+    // Notes page events
+    document.getElementById('btn-save-note').addEventListener('click', () => this.handleSaveNote());
+    document.getElementById('btn-general-notes-quiz').addEventListener('click', () => this.handleGeneralNotesQuiz());
+    document.getElementById('notes-list').addEventListener('click', (e) => this.handleNotesListClick(e));
+  },
+  ensureKey(action) {
+    if (!Groq.getKey()) { this._pendingNoteAction = action; this.showKeyOverlay(); return false; }
+    return true;
   },
   startApp() {
     document.getElementById('page-register').style.display = 'none';
@@ -2096,6 +2272,7 @@ const App = {
   async startQuizSession() {
     Quiz.reset(); Quiz.subject = this.selectedSubject; Quiz.difficulty = this.selectedDifficulty; Quiz.totalQuestions = this.selectedCount;
     UI.navigate('quiz'); document.getElementById('quiz-loading').style.display = 'flex'; document.getElementById('quiz-question-wrap').style.display = 'none';
+    document.getElementById('quiz-loading').innerHTML = `<div class="spinner"></div><div class="spinner-text">Generating questions with AI…</div>`;
     try {
       const qs = await Groq.generateQuestions(this.selectedSubject, this.selectedDifficulty, this.selectedCount, this.currentClass);
       Quiz.questions = qs; Quiz.startTime = Date.now();
@@ -2104,6 +2281,21 @@ const App = {
       Quiz.renderQuestion();
     } catch (err) {
       document.getElementById('quiz-loading').innerHTML = `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">❌</div><div style="font-weight:600;margin-bottom:8px">Failed to generate questions</div><div style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">${err.message}</div><button class="btn-primary" style="max-width:200px" onclick="UI.navigate('subjects')">← Go Back</button></div>`;
+      console.error('Groq error:', err);
+    }
+  },
+  async startNotesQuizSession(notesText, subjectLabel, difficulty, count) {
+    Quiz.reset(); Quiz.subject = subjectLabel; Quiz.difficulty = difficulty; Quiz.totalQuestions = count; Quiz.fromNotes = true;
+    UI.navigate('quiz'); document.getElementById('quiz-loading').style.display = 'flex'; document.getElementById('quiz-question-wrap').style.display = 'none';
+    document.getElementById('quiz-loading').innerHTML = `<div class="spinner"></div><div class="spinner-text">Generating quiz from your notes…</div>`;
+    try {
+      const qs = await Groq.generateQuestionsFromNotes(notesText, difficulty, count, subjectLabel);
+      Quiz.questions = qs; Quiz.startTime = Date.now();
+      document.getElementById('quiz-loading').style.display = 'none';
+      document.getElementById('quiz-question-wrap').style.display = 'block';
+      Quiz.renderQuestion();
+    } catch (err) {
+      document.getElementById('quiz-loading').innerHTML = `<div style="text-align:center;padding:40px"><div style="font-size:32px;margin-bottom:12px">❌</div><div style="font-weight:600;margin-bottom:8px">Failed to generate quiz from notes</div><div style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">${err.message}</div><button class="btn-primary" style="max-width:200px" onclick="UI.navigate('notes')">← Go Back</button></div>`;
       console.error('Groq error:', err);
     }
   },
@@ -2196,6 +2388,117 @@ const App = {
     if ((stats.studiedSubjects || []).length >= 5) unlock('multi_subject');
     if (elapsed < 180 && Quiz.questions.length >= 10) unlock('speed_demon');
     stats.achievements = achievements; Store.setStats(stats);
+  },
+
+  /* ===================== NOTES FEATURE ===================== */
+  renderNotes() {
+    // Populate subject select based on current/profile class
+    const profile = Store.getProfile();
+    const cls = profile ? profile.class : 'JSS1';
+    const group = cls.startsWith('JSS') ? 'JSS' : 'SS';
+    const subSelect = document.getElementById('note-subject-select');
+    const allSubjectNames = Array.from(new Set(SUBJECTS.JSS.concat(SUBJECTS.SS).map(s => s.name)));
+    if (subSelect.children.length === 0) {
+      subSelect.innerHTML = allSubjectNames.map(n => `<option value="${n}">${n}</option>`).join('');
+    }
+    const clsSelect = document.getElementById('note-class-select');
+    if (clsSelect && !clsSelect.dataset.init) { clsSelect.value = cls; clsSelect.dataset.init = '1'; }
+
+    const notes = Store.getNotes();
+    const listEl = document.getElementById('notes-list');
+    const generalCard = document.getElementById('notes-general-card');
+    if (notes.length === 0) {
+      listEl.innerHTML = `<div class="empty-state"><span class="empty-icon">📝</span>No notes yet — add your first note above!</div>`;
+      generalCard.style.display = 'none';
+      return;
+    }
+    generalCard.style.display = 'block';
+    listEl.innerHTML = notes.slice().reverse().map(n => `
+      <div class="note-card" data-id="${n.id}">
+        <div class="note-card-head">
+          <span class="q-pill subject">${n.subject}</span>
+          <span class="q-pill easy">${n.class}</span>
+          <span class="note-card-date">${n.date}</span>
+        </div>
+        <div class="note-summary-text">${(n.summary || n.rawText).replace(/</g,'&lt;')}</div>
+        <div class="note-card-actions">
+          <button class="btn-secondary" data-action="ask">❓ Ask a Question</button>
+          <button class="btn-secondary" data-action="quiz">🧠 Quiz Me On This</button>
+          <button class="btn-danger" data-action="delete" style="padding:8px 14px;font-size:12.5px;">🗑️ Delete</button>
+        </div>
+        <div class="note-qa-box" id="qa-box-${n.id}">
+          <div class="note-qa-input-row">
+            <input class="form-input" id="qa-input-${n.id}" type="text" placeholder="Ask something about this note…" />
+            <button class="btn-primary" style="width:auto;" data-action="ask-submit">Ask</button>
+          </div>
+          <div class="note-qa-answer" id="qa-answer-${n.id}"></div>
+        </div>
+      </div>`).join('');
+  },
+  handleSaveNote() {
+    const text = document.getElementById('note-text-input').value.trim();
+    const subject = document.getElementById('note-subject-select').value;
+    const cls = document.getElementById('note-class-select').value;
+    if (!text) { UI.toast('Please write or paste your notes first', 'error'); return; }
+    if (!this.ensureKey(() => this.handleSaveNote())) return;
+    const btn = document.getElementById('btn-save-note');
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Summarizing…'; btn.disabled = true;
+    Groq.summarizeNotes(text, subject).then(summary => {
+      const notes = Store.getNotes();
+      const entry = { id: 'note_' + Date.now(), subject, class: cls, rawText: text, summary, date: new Date().toLocaleDateString() };
+      notes.push(entry); Store.setNotes(notes);
+      document.getElementById('note-text-input').value = '';
+      UI.toast('Note saved & summarized!', 'success');
+      this.renderNotes();
+      const stats = Store.getStats();
+      const achievements = stats.achievements || [];
+      if (!achievements.includes('note_taker')) { achievements.push('note_taker'); UI.toast('🏅 Achievement unlocked: Note Taker!', 'success', 4000); }
+      if (notes.length >= 5 && !achievements.includes('notes_5')) { achievements.push('notes_5'); UI.toast('🏅 Achievement unlocked: Archivist!', 'success', 4000); }
+      stats.achievements = achievements; Store.setStats(stats);
+    }).catch(err => {
+      UI.toast('Summarization failed: ' + err.message, 'error');
+    }).finally(() => { btn.textContent = originalText; btn.disabled = false; });
+  },
+  handleNotesListClick(e) {
+    const card = e.target.closest('.note-card'); if (!card) return;
+    const id = card.dataset.id;
+    const notes = Store.getNotes();
+    const note = notes.find(n => n.id === id); if (!note) return;
+    const action = e.target.dataset.action;
+    if (action === 'delete') {
+      if (confirm('Delete this note?')) { Store.setNotes(notes.filter(n => n.id !== id)); this.renderNotes(); UI.toast('Note deleted', 'info'); }
+      return;
+    }
+    if (action === 'ask') {
+      const box = document.getElementById(`qa-box-${id}`);
+      box.classList.toggle('show');
+      return;
+    }
+    if (action === 'ask-submit') {
+      const input = document.getElementById(`qa-input-${id}`);
+      const question = input.value.trim();
+      if (!question) { UI.toast('Type a question first', 'error'); return; }
+      if (!this.ensureKey(() => this.handleNotesListClick(e))) return;
+      const answerBox = document.getElementById(`qa-answer-${id}`);
+      answerBox.classList.add('show'); answerBox.textContent = '⏳ Thinking…';
+      Groq.askAboutNotes(note.rawText, question, note.subject).then(answer => {
+        answerBox.textContent = answer;
+      }).catch(err => { answerBox.textContent = '❌ ' + err.message; });
+      return;
+    }
+    if (action === 'quiz') {
+      if (!this.ensureKey(() => this.startNotesQuizSession(note.rawText, note.subject, 'Medium', 10))) return;
+      this.startNotesQuizSession(note.rawText, note.subject, 'Medium', 10);
+      return;
+    }
+  },
+  handleGeneralNotesQuiz() {
+    const notes = Store.getNotes();
+    if (notes.length === 0) { UI.toast('Add some notes first', 'error'); return; }
+    const combined = notes.map(n => `[${n.subject}]\n${n.summary || n.rawText}`).join('\n\n');
+    if (!this.ensureKey(() => this.startNotesQuizSession(combined, 'All My Notes', 'Medium', 15))) return;
+    this.startNotesQuizSession(combined, 'All My Notes', 'Medium', 15);
   },
 };
 
