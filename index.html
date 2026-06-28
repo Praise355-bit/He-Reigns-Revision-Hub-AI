@@ -2208,8 +2208,7 @@ const App = {
     document.getElementById('stat-xp').textContent       = stats.xp;
     document.getElementById('stat-questions').textContent = stats.totalQ;
     document.getElementById('stat-correct').textContent   = stats.correct;
-    document.getElementById('sb-xp').textContent          = `⚡ ${stats.xp} XP`;
-    document.getElementById('sb-streak').textContent      = `${stats.streak} day streak`;
+    this.updateSidebarStats();
     let bestSub = '—'; let bestPct = 0;
     Object.entries(stats.subjectMap).forEach(([s, d]) => { const p = d.total > 0 ? Math.round(d.correct/d.total*100) : 0; if (p > bestPct) { bestPct = p; bestSub = s; } });
     document.getElementById('stat-best-subject').textContent = bestSub;
@@ -2229,6 +2228,13 @@ const App = {
           <div class="recent-score">${r.score}%</div>
         </div>`).join('');
     }
+  },
+  updateSidebarStats() {
+    const stats = Store.getStats();
+    const sbXp = document.getElementById('sb-xp');
+    const sbStreak = document.getElementById('sb-streak');
+    if (sbXp) sbXp.textContent = `⚡ ${stats.xp} XP`;
+    if (sbStreak) sbStreak.textContent = `${stats.streak} day streak`;
   },
   renderSubjects() {
     const profile = Store.getProfile(); const currentClass = profile ? profile.class : 'JSS1';
@@ -2388,6 +2394,7 @@ const App = {
     if ((stats.studiedSubjects || []).length >= 5) unlock('multi_subject');
     if (elapsed < 180 && Quiz.questions.length >= 10) unlock('speed_demon');
     stats.achievements = achievements; Store.setStats(stats);
+    App.updateSidebarStats();
   },
 
   /* ===================== NOTES FEATURE ===================== */
@@ -2420,7 +2427,7 @@ const App = {
           <span class="q-pill easy">${n.class}</span>
           <span class="note-card-date">${n.date}</span>
         </div>
-        <div class="note-summary-text">${(n.summary || n.rawText).replace(/</g,'&lt;')}</div>
+        <div class="note-summary-text">${this.formatNoteSummary(n.summary || n.rawText)}</div>
         <div class="note-card-actions">
           <button class="btn-secondary" data-action="ask">❓ Ask a Question</button>
           <button class="btn-secondary" data-action="quiz">🧠 Quiz Me On This</button>
@@ -2434,6 +2441,17 @@ const App = {
           <div class="note-qa-answer" id="qa-answer-${n.id}"></div>
         </div>
       </div>`).join('');
+  },
+  formatNoteSummary(text) {
+    const escaped = (text || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const headers = ['OVERVIEW', 'KEY POINTS', 'KEY TERMS', 'EXAM TIP'];
+    return escaped.split('\n').map(line => {
+      const trimmed = line.trim();
+      if (headers.includes(trimmed)) {
+        return `<strong style="color:var(--blue-bright);display:block;margin-top:10px;">${trimmed}</strong>`;
+      }
+      return line;
+    }).join('\n');
   },
   handleSaveNote() {
     const text = document.getElementById('note-text-input').value.trim();
