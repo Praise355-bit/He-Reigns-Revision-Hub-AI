@@ -1635,6 +1635,19 @@ body {
         </div>
 
         <div class="settings-section">
+          <h3>💾 Data Management</h3>
+          <div class="settings-row">
+            <div class="settings-label">Export Data<small>Download all your progress and notes as a backup</small></div>
+            <button class="btn-secondary" id="btn-export-data">📥 Export</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label">Import Data<small>Restore from a previously exported backup</small></div>
+            <button class="btn-secondary" id="btn-import-data">📤 Import</button>
+            <input type="file" id="import-file-input" accept=".json" style="display:none;" />
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h3>⚠️ Danger Zone</h3>
           <div class="settings-row">
             <div class="settings-label">Reset Profile<small>Delete all your data and start fresh</small></div>
@@ -2520,10 +2533,121 @@ const App = {
   },
 };
 
+/* ===================== DATA EXPORT/IMPORT ===================== */
+const DataManager = {
+  exportData() {
+    const profile = Store.getProfile();
+    const stats = Store.getStats();
+    const settings = Store.getSettings();
+    const notes = Store.getNotes();
+    const leaderboard = Store.getLeaderboard();
+    
+    const exportData = {
+      version: 1,
+      exportDate: new Date().toISOString(),
+      profile,
+      stats,
+      settings,
+      notes,
+      leaderboard
+    };
+    
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    const profileName = profile ? profile.name.replace(/\s+/g, '_') : 'student';
+    link.download = `revision_hub_backup_${profileName}_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    UI.toast('✅ Data exported successfully!', 'success');
+  },
+
+  importData() {
+    const fileInput = document.getElementById('import-file-input');
+    fileInput.click();
+  },
+
+  handleFileImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        
+        if (!importedData.version || importedData.version !== 1) {
+          UI.toast('❌ Invalid or unsupported backup file format', 'error');
+          return;
+        }
+
+        // Validate data structure
+        if (!importedData.profile || typeof importedData.profile !== 'object') {
+          UI.toast('❌ Backup file is corrupted or invalid', 'error');
+          return;
+        }
+
+        // Confirm before overwriting
+        if (!confirm('⚠️ This will replace all your current data with the backup. Continue?')) {
+          return;
+        }
+
+        // Import all data
+        if (importedData.profile) Store.setProfile(importedData.profile);
+        if (importedData.stats) Store.setStats(importedData.stats);
+        if (importedData.settings) Store.setSettings(importedData.settings);
+        if (importedData.notes) Store.setNotes(importedData.notes);
+        if (importedData.leaderboard) Store.setLeaderboard(importedData.leaderboard);
+
+        UI.toast('✅ Data imported successfully! Reloading…', 'success');
+        setTimeout(() => { window.location.reload(); }, 1500);
+      } catch (err) {
+        console.error('Import error:', err);
+        UI.toast('❌ Failed to import data: ' + err.message, 'error');
+      }
+    };
+    reader.onerror = () => {
+      UI.toast('❌ Error reading file', 'error');
+    };
+    reader.readAsText(file);
+    
+    // Reset input for next use
+    event.target.value = '';
+  }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   App.init();
   document.getElementById('reg-name').addEventListener('keydown', e => { if (e.key === 'Enter') App.handleRegister(); });
   document.getElementById('key-input').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('btn-save-key').click(); });
+  
+  // Export/Import button listeners
+  const btnExport = document.getElementById('btn-export-data');
+  const btnImport = document.getElementById('btn-import-data');
+  const fileInput = document.getElementById('import-file-input');
+  
+  if (btnExport) {
+    btnExport.addEventListener('click', () => {
+      const profile = Store.getProfile();
+      if (!profile) {
+        UI.toast('Please create a profile first', 'info');
+        return;
+      }
+      DataManager.exportData();
+    });
+  }
+  
+  if (btnImport) {
+    btnImport.addEventListener('click', () => DataManager.importData());
+  }
+  
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => DataManager.handleFileImport(e));
+  }
 });
 </script>
 </body>
